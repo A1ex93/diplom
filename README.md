@@ -7,20 +7,35 @@
 Скрипт, прилагаемый в документе по [код main.tf](https://github.com/A1ex93/diplom/blob/main/main.tf), успешно выполнил развёртывание инфраструктуры и создал 6 виртуальных машин в соответствии с поставленным заданием. Все ресурсы были развернуты в требуемом количестве и с соблюдением указанных параметров. Подтверждение выполнения — скриншоты развернутых виртуальных машин, представленные ниже. В целом все прошло хорошо, кроме сервера zabbix, которому в первом скрипте не выделил внешний адрес поэтому пришлось пересоздавать ВМ с помощью отдельного скрипта - [код zabbix.tf](https://github.com/A1ex93/diplom/blob/main/zabbix.tf)
 
 ![alt text](https://github.com/A1ex93/diplom/blob/main/diplom_image/all_vm.png)
+![alt text](https://github.com/A1ex93/diplom/blob/main/diplom_image/diski.png)
 
 # Группы безопастности, подсети и тд
 
 Так же прилагаемый скрипт terraform создал группы безопастности, сети, подсети, что так же отображено на скриншотах ниже
 
-[отображаемый текст](ссылка)
+[Группы безопасности](https://github.com/A1ex93/diplom/blob/main/diplom_image/security-group.png)
+[Внутренняя сеть](https://github.com/A1ex93/diplom/blob/main/diplom_image/internal-zone.png)
+[Подсети](https://github.com/A1ex93/diplom/blob/main/diplom_image/security-group.png)
+[ru-central1](https://github.com/A1ex93/diplom/blob/main/diplom_image/ru-central1.png)
 
 # Софт
 
 С установкой софта возникли проблемы в виду санкций часть софта пришлось скачивать через VPN и загружать на ВМ через scp, часть поднял в докере,
 
-
+Nginx на первом веб-сервере
 ![alt text](https://github.com/A1ex93/diplom/blob/main/diplom_image/nginx-web-1.png)
+Nginx на втором веб-сервере
 ![alt text](https://github.com/A1ex93/diplom/blob/main/diplom_image/nginx-web-2.png)
+Filebeat на первом веб-сервере
+![alt text](https://github.com/A1ex93/diplom/blob/main/diplom_image/filebeat-web-1.png)
+Filebeat на втором веб-сервере
+![alt text](https://github.com/A1ex93/diplom/blob/main/diplom_image/filebeat-web-2.png)
+Установка zabbix на сервере мониторинга
+![alt text](https://github.com/A1ex93/diplom/blob/main/diplom_image/zabbix-install.png)
+Установка кибана в докере
+![alt text](https://github.com/A1ex93/diplom/blob/main/diplom_image/kibana-with-docker.png)
+Установка elasticsearch также выполнил докере
+![alt text](https://github.com/A1ex93/diplom/blob/main/diplom_image/elasticsearch-with-docker.png)
 
 # Балансировщик
 
