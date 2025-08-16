@@ -95,5 +95,5 @@ sudo docker run -d   --name elasticsearch2   -p 9200:9200   -p 9300:9300   -e "d
 # Резервное копирование
 Создал расписание выполнения snapshot дисков всех ВМ, настроил согласно заданию ежедневное выполнение и время жизни snapshot 7 дней.
 
-![alt text](https://github.com/A1ex93/diplom/blob/main/diplom_image/shapshot.png)
+![alt text](https://github.com/A1ex93/diplom/blob/main/diplom_image/snapshot.png)
 ![alt text](https://github.com/A1ex93/diplom/blob/main/diplom_image/shapshot-schedule.png)
