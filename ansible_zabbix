@@ -1,0 +1,190 @@
+- name: Install Zabbix 7.0 LTS on Ubuntu 24.04 with GPG fix
+  hosts: zabbix
+  become: yes
+  vars:
+    zabbix_version: "7.0"
+    ubuntu_codename: "noble"
+    php_version: "8.3"
+    zabbix_db_name: "zabbix"
+    zabbix_db_user: "zabbix"
+    zabbix_db_password: "zabbix"
+    timezone: "Europe/Moscow"
+
+  tasks:
+    # 1. Установка необходимых пакетов
+    - name: Install prerequisite packages
+      apt:
+        name:
+          - software-properties-common
+          - gnupg2
+          - ca-certificates
+          - curl
+          - apt-transport-https
+        state: latest
+        update_cache: yes
+
+    # 2. Надежное добавление GPG ключа (3 разных метода)
+    - name: Add Zabbix GPG key (Method 1 - Direct download)
+      block:
+        - name: Download Zabbix GPG key
+          get_url:
+            url: "https://repo.zabbix.com/zabbix-official-repo.key"
+            dest: "/tmp/zabbix-key.gpg"
+            mode: '0644'
+          register: key_download
+          ignore_errors: yes
+
+        - name: Add downloaded key
+          apt_key:
+            file: "/tmp/zabbix-key.gpg"
+            state: present
+          when: key_download is succeeded
+
+      rescue:
+        - name: Add Zabbix GPG key (Method 2 - Keyserver)
+          apt_key:
+            keyserver: "hkp://keyserver.ubuntu.com:80"
+            id: "D6E4BD4F4F71B893"  # Новый ключ для Zabbix 7.0
+            state: present
+          ignore_errors: yes
+
+    # 3. Добавление репозитория с явным указанием подписи
+    - name: Add Zabbix repository
+      apt_repository:
+        repo: "deb [signed-by=/usr/share/keyrings/zabbix-archive-keyring.gpg] https://repo.zabbix.com/zabbix/{{ zabbix_version }}/ubuntu {{ ubuntu_codename }} main"
+        state: present
+        filename: "zabbix.list"
+
+    # 4. Принудительное обновление кэша с проверкой
+    - name: Force apt cache update
+      apt:
+        update_cache: yes
+        force_apt_get: yes
+      register: apt_update
+      until: apt_update is succeeded
+      retries: 5
+      delay: 10
+
+    # 5. Установка PostgreSQL и зависимостей
+    - name: Install PostgreSQL and PHP packages
+      apt:
+        name:
+          - postgresql-16
+          - postgresql-client-16
+          - postgresql-contrib-16
+          - apache2
+          - php{{ php_version }}
+          - php{{ php_version }}-pgsql
+          - php{{ php_version }}-bcmath
+          - php{{ php_version }}-mbstring
+          - php{{ php_version }}-gd
+          - php{{ php_version }}-xml
+        state: latest
+
+    # 6. Установка компонентов Zabbix
+    - name: Install Zabbix packages
+      apt:
+        name:
+          - zabbix-server-pgsql
+          - zabbix-frontend-php
+          - zabbix-apache-conf
+          - zabbix-sql-scripts
+          - zabbix-agent
+          - zabbix-js
+        state: latest
+
+    # 7. Настройка базы данных
+    - name: Create PostgreSQL database
+      community.postgresql.postgresql_db:
+        name: "{{ zabbix_db_name }}"
+        encoding: UTF8
+        lc_ctype: en_US.UTF-8
+        lc_collate: en_US.UTF-8
+        template: template0
+        login_user: postgres
+
+    - name: Create Zabbix DB user
+      community.postgresql.postgresql_user:
+        name: "{{ zabbix_db_user }}"
+        password: "{{ zabbix_db_password }}"
+        db: "{{ zabbix_db_name }}"
+        login_user: postgres
+        role_attr_flags: "CREATEDB,NOSUPERUSER"
+
+    # 8. Импорт схемы
+    - name: Import Zabbix database schema
+      command: >
+        sudo -u postgres zcat /usr/share/zabbix-sql-scripts/postgresql/server.sql.gz | psql {{ zabbix_db_name }}
+      environment:
+        PGPASSWORD: "{{ zabbix_db_password }}"
+
+    # 9. Конфигурация Zabbix Server
+    - name: Configure Zabbix server
+      template:
+        src: zabbix_server.conf.j2
+        dest: /etc/zabbix/zabbix_server.conf
+        owner: zabbix
+        group: zabbix
+        mode: 0640
+      notify: restart zabbix-server
+
+    # 10. Настройка PHP
+    - name: Configure PHP settings
+      lineinfile:
+        path: "/etc/php/{{ php_version }}/apache2/php.ini"
+        regexp: "^{{ item.regexp }}"
+        line: "{{ item.line }}"
+      with_items:
+        - { regexp: '^;?date.timezone =', line: 'date.timezone = {{ timezone }}' }
+        - { regexp: '^;?post_max_size =', line: 'post_max_size = 32M' }
+        - { regexp: '^;?upload_max_filesize =', line: 'upload_max_filesize = 32M' }
+        - { regexp: '^;?max_execution_time =', line: 'max_execution_time = 600' }
+        - { regexp: '^;?max_input_time =', line: 'max_input_time = 600' }
+        - { regexp: '^;?memory_limit =', line: 'memory_limit = 256M' }
+      notify: restart apache2
+
+    # 11. Настройка Apache
+    - name: Enable Apache site
+      file:
+        src: /etc/zabbix/apache.conf
+        dest: /etc/apache2/sites-enabled/zabbix.conf
+        state: link
+      notify: restart apache2
+
+    # 12. Установка прав
+    - name: Set proper permissions
+      file:
+        path: /etc/zabbix/web
+        state: directory
+        owner: www-data
+        group: www-data
+        recurse: yes
+        mode: '0755'
+
+    # 13. Запуск сервисов
+    - name: Start and enable services
+      service:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      with_items:
+        - zabbix-server
+        - zabbix-agent
+        - apache2
+        - postgresql
+
+  handlers:
+    - name: restart zabbix-server
+      service:
+        name: zabbix-server
+        state: restarted
+
+    - name: restart apache2
+      service:
+        name: apache2
+        state: restarted
+
+    - name: reload postgresql
+      service:
+        name: postgresql
+        state: reloaded
