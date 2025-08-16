@@ -6,23 +6,41 @@
 
 Создайте две ВМ в разных зонах, установите на них сервер nginx, если его там нет. ОС и содержимое ВМ должно быть идентичным, это будут наши веб-сервера.
 
-Используйте набор статичных файлов для сайта. Можно переиспользовать сайт из домашнего задания.
+![alt text](https://github.com/A1ex93/diplom/blob/main/diplom_image/all_vm.png)
+![alt text](https://github.com/A1ex93/diplom/blob/main/diplom_image/nginx-web-1.png)
+![alt text](https://github.com/A1ex93/diplom/blob/main/diplom_image/nginx-web-2.png)
 
 Виртуальные машины не должны обладать внешним Ip-адресом, те находится во внутренней сети. Доступ к ВМ по ssh через бастион-сервер. Доступ к web-порту ВМ через балансировщик yandex cloud.
+
+![alt text](https://github.com/A1ex93/infobez_2/blob/main/11.png)
 
 # Балансировщик
 
 Target Group
 
+![alt text](https://github.com/A1ex93/diplom/blob/main/diplom_image/target-group.png)
+
 Backend Group
+
+![alt text](https://github.com/A1ex93/diplom/blob/main/diplom_image/backend-group.png)
 
 HTTP router.
 
+![alt text](https://github.com/A1ex93/diplom/blob/main/diplom_image/route-table.png)
+
 Application load balancer
+
+![alt text](https://github.com/A1ex93/diplom/blob/main/diplom_image/balancer.png)
+![alt text](https://github.com/A1ex93/diplom/blob/main/diplom_image/balancer1.png)
+![alt text](https://github.com/A1ex93/diplom/blob/main/diplom_image/balancer2.png)
+![alt text](https://github.com/A1ex93/diplom/blob/main/diplom_image/balancer3.png)
+![alt text](https://github.com/A1ex93/diplom/blob/main/diplom_image/balancer4.png)
 
 Публичный адрес балансировщика - [http://84.252.132.76/]
 
 Протестируйте сайт curl -v <публичный IP балансера>:80
+
+![alt text](https://github.com/A1ex93/diplom/blob/main/diplom_image/all_vm.png)
 
 Мониторинг
 Публичный адрес zabbix - [http://62.84.112.9/zabbix/zabbix.php?action=dashboard.view&dashboardid=390&from=now-1h&to=now]
