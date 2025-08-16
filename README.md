@@ -82,11 +82,11 @@ sudo docker run -d   --name elasticsearch2   -p 9200:9200   -p 9300:9300   -e "d
 
 C kibana возникла аналогичная проблема, которые решил такм же образом.
 
-[Доступность kibana](https://github.com/A1ex93/diplom/blob/main/diplom_image/elasticsearch-curl.png)
+![Доступность kibana](https://github.com/A1ex93/diplom/blob/main/diplom_image/elasticsearch-curl.png)
 
-[Elasticsearch security group](https://github.com/A1ex93/diplom/blob/main/diplom_image/elasticsearch-sg.png)
+![Elasticsearch security group](https://github.com/A1ex93/diplom/blob/main/diplom_image/elasticsearch-sg.png)
 
-[Веб интерфейс kibana](https://github.com/A1ex93/diplom/blob/main/diplom_image/kibana-elastic-web.png)
+![Веб интерфейс kibana](https://github.com/A1ex93/diplom/blob/main/diplom_image/kibana-elastic-web.png)
 
 Развертывание стека Elasticsearch и Kibana прошло успешно, взаимодействие между компонентами настроено корректно. Elasticsearch принимает данные от Filebeat, индексирует их и хранит в соответствующих индексах, что подтверждается наличием актуальных записей при проверке через API. Filebeat, установленный на всех целевых виртуальных машинах, стабильно собирает логи и передаёт их в Elasticsearch без задержек и ошибок. В Kibana данные отображаются в режиме реального времени — созданы индекс-паттерны, на основе которых настроены поиск и визуализация событий. Доступ к веб-интерфейсу Kibana обеспечен, что позволяет эффективно анализировать логи, отслеживать аномалии и оперативно реагировать на инциденты. Таким образом, лог-сбор и централизованное хранение логов функционируют в штатном режиме.
 
