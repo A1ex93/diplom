@@ -1,0 +1,142 @@
+---
+- name: Deploy software stack
+  hosts: all
+  become: yes
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+- name: Configure web servers
+  hosts: web
+  become: yes
+  tasks:
+    - name: Gather package facts
+      ansible.builtin.package_facts:
+        manager: auto
+    - name: Install Nginx (if missing)
+      ansible.builtin.apt:
+        name: nginx
+        state: present
+      when: "'nginx' not in ansible_facts.packages"
+      become: yes
+    - name: Start Nginx
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+- name: Configure Zabbix with PostgreSQL
+  hosts: zabbix
+  become: yes
+  vars:
+    zabbix_db_name: zabbix
+    zabbix_db_user: zabbix
+    zabbix_db_password: "your_secure_password"
+  
+  tasks:
+    - name: Install required packages
+      apt:
+        name:
+          - zabbix-server-pgsql
+          - zabbix-frontend-php
+          - zabbix-apache-conf
+          - zabbix-sql-scripts
+          - postgresql
+          - postgresql-client
+        state: latest
+        update_cache: yes
+
+    - name: Create PostgreSQL database
+      postgresql_db:
+        name: "{{ zabbix_db_name }}"
+        encoding: UTF8
+        lc_ctype: en_US.UTF-8
+        lc_collate: en_US.UTF-8
+        login_user: postgres
+
+    - name: Create Zabbix DB user
+      postgresql_user:
+        name: "{{ zabbix_db_user }}"
+        password: "{{ zabbix_db_password }}"
+        db: "{{ zabbix_db_name }}"
+        login_user: postgres
+        role_attr_flags: CREATEDB
+
+    - name: Import Zabbix SQL schema
+      command: >
+        zcat /usr/share/zabbix-sql-scripts/postgresql/server.sql.gz | psql -h localhost -U "{{ zabbix_db_user }}" -d "{{ zabbix_db_name }}"
+      environment:
+        PGPASSWORD: "{{ zabbix_db_password }}"
+
+    - name: Configure Zabbix server
+      template:
+        src: zabbix_server.conf.j2
+        dest: /etc/zabbix/zabbix_server.conf
+      notify: restart zabbix-server
+
+  handlers:
+    - name: restart zabbix-server
+      service:
+        name: zabbix-server
+        state: restarted
+
+- name: Configure Elasticsearch
+  hosts: elasticsearch
+  become: yes
+  tasks:
+    - name: Add Elasticsearch GPG key
+      apt_key:
+        url: "https://artifacts.elastic.co/GPG-KEY-elasticsearch"
+        state: present
+    - name: Add Elasticsearch repository
+      apt_repository:
+        repo: "deb https://artifacts.elastic.co/packages/8.x/apt stable main"
+        state: present
+        filename: elasticsearch
+    - name: Install Elasticsearch
+      apt:
+        name: elasticsearch
+        state: latest
+    - name: Configure Elasticsearch
+      copy:
+        src: files/elasticsearch.yml
+        dest: /etc/elasticsearch/elasticsearch.yml
+        owner: root
+        group: elasticsearch
+        mode: '0660'
+      notify: restart elasticsearch
+    - name: Start Elasticsearch
+      service:
+        name: elasticsearch
+        state: started
+        enabled: yes
+  handlers:
+    - name: restart elasticsearch
+      service:
+        name: elasticsearch
+        state: restarted
+
+- name: Configure Kibana
+  hosts: kibana
+  become: yes
+  tasks:
+    - name: Install Kibana
+      apt:
+        name: kibana
+        state: latest
+    - name: Configure Kibana
+      copy:
+        src: files/kibana.yml
+        dest: /etc/kibana/kibana.yml
+      notify: restart kibana
+    - name: Start Kibana
+      service:
+        name: kibana
+        state: started
+        enabled: yes
+  handlers:
+    - name: restart kibana
+      service:
+        name: kibana
+        state: restarted
