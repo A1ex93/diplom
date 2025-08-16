@@ -61,7 +61,7 @@ Application load balancer
 
 Публичный адрес балансировщика - [http://84.252.132.76/]
 
-Протестируйте сайт curl -v <публичный IP балансера>:80
+Протестировал работу балансировщика:
 
 ![alt text](https://github.com/A1ex93/diplom/blob/main/diplom_image/all_vm.png)
 
