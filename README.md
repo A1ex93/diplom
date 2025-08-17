@@ -12,6 +12,10 @@
 Так же прилагаемый скрипт terraform создал группы безопастности, сети, подсети, что так же отображено на скриншотах ниже
 
 ![Группы безопасности](https://github.com/A1ex93/diplom/blob/main/diplom_image/security-group.png)
+![internal-ssh](https://github.com/A1ex93/diplom/blob/main/diplom_image/internal-ssh.png)
+![elasticsearch-sg](https://github.com/A1ex93/diplom/blob/main/diplom_image/elasticsearch-sg.png)
+![allow-web](https://github.com/A1ex93/diplom/blob/main/diplom_image/allow-web.png)
+![ru-central1](https://github.com/A1ex93/diplom/blob/main/diplom_image/ru-central1.png)
 ![Внутренняя сеть](https://github.com/A1ex93/diplom/blob/main/diplom_image/internal-zone.png)
 ![ru-central1](https://github.com/A1ex93/diplom/blob/main/diplom_image/ru-central1.png)
 
