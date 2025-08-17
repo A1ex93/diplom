@@ -15,7 +15,6 @@
 ![internal-ssh](https://github.com/A1ex93/diplom/blob/main/diplom_image/internal-ssh.png)
 ![elasticsearch-sg](https://github.com/A1ex93/diplom/blob/main/diplom_image/elasticsearch-sg.png)
 ![allow-web](https://github.com/A1ex93/diplom/blob/main/diplom_image/allow-web.png)
-![ssh-bastion](https://github.com/A1ex93/diplom/blob/main/diplom_image/ssh-bastion.png)
 ![kibana-sg](https://github.com/A1ex93/diplom/blob/main/diplom_image/kibana-sg.png)
 ![ru-central1](https://github.com/A1ex93/diplom/blob/main/diplom_image/ru-central1.png)
 ![Внутренняя сеть](https://github.com/A1ex93/diplom/blob/main/diplom_image/internal-zone.png)
