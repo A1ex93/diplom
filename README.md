@@ -13,7 +13,6 @@
 
 ![Группы безопасности](https://github.com/A1ex93/diplom/blob/main/diplom_image/security-group.png)
 ![Внутренняя сеть](https://github.com/A1ex93/diplom/blob/main/diplom_image/internal-zone.png)
-![Подсети](https://github.com/A1ex93/diplom/blob/main/diplom_image/security-group.png)
 ![ru-central1](https://github.com/A1ex93/diplom/blob/main/diplom_image/ru-central1.png)
 
 # Софт
