@@ -78,9 +78,6 @@ resource "yandex_vpc_subnet" "private-data" {
 }
 
 # ГРУППЫ БЕЗОПАСНОСТИ 
-provider "yandex" {
-  zone = "ru-central1-a" # Укажите вашу зону
-}
 
 # 1. Группа безопасности для SSH Bastion
 resource "yandex_vpc_security_group" "ssh_bastion" {
