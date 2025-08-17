@@ -196,37 +196,6 @@ resource "yandex_dns_zone" "internal_zone" {
   private_networks = [yandex_vpc_network.main.id]  # Критически важная строка
 }
 
-resource "yandex_vpc_security_group" "kibana" {
-  name       = "kibana-sg"
-  network_id = yandex_vpc_network.main.id
-
-  ingress {
-    protocol       = "TCP"
-    port           = 5601
-    v4_cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    protocol       = "ANY"
-    v4_cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
-resource "yandex_vpc_security_group" "es" {
-  name       = "elasticsearch-sg"
-  network_id = yandex_vpc_network.main.id
-
-  ingress {
-    protocol       = "TCP"
-    port           = 9200
-    v4_cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    protocol       = "ANY"
-    v4_cidr_blocks = ["0.0.0.0/0"]
-  }
-}
 
 # === BASTION HOST ===
 resource "yandex_compute_instance" "bastion" {
