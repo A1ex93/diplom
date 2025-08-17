@@ -78,33 +78,14 @@ resource "yandex_vpc_subnet" "private-data" {
 }
 
 # ГРУППЫ БЕЗОПАСНОСТИ 
-
-resource "yandex_vpc_security_group" "internal_traffic" {
-  name        = "internal-traffic"
-  description = "Allow all internal traffic between subnets"
-  network_id  = yandex_vpc_network.main.id
-
-  ingress {
-    protocol       = "ANY"
-    from_port      = 0
-    to_port        = 65535
-    v4_cidr_blocks = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24", "10.0.4.0/24"]
-  }
-
-  ingress {
-    protocol       = "ICMP"
-    v4_cidr_blocks = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24", "10.0.4.0/24"]
-  }
-
-  egress {
-    protocol       = "ANY"
-    v4_cidr_blocks = ["0.0.0.0/0"]
-  }
+provider "yandex" {
+  zone = "ru-central1-a" # Укажите вашу зону
 }
 
-resource "yandex_vpc_security_group" "bastion" {
-  name       = "allow-ssh"
-  network_id = yandex_vpc_network.main.id
+# 1. Группа безопасности для SSH Bastion
+resource "yandex_vpc_security_group" "ssh_bastion" {
+  name        = "ssh-bastion"
+  description = "Security group for SSH Bastion host"
 
   ingress {
     protocol       = "TCP"
@@ -114,13 +95,16 @@ resource "yandex_vpc_security_group" "bastion" {
 
   egress {
     protocol       = "ANY"
+    from_port      = 0
+    to_port        = 65535
     v4_cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
-resource "yandex_vpc_security_group" "web" {
-  name       = "allow-web"
-  network_id = yandex_vpc_network.main.id
+# 2. Группа безопасности для веб-доступа
+resource "yandex_vpc_security_group" "allow_web" {
+  name        = "allow-web"
+  description = "Security group for web traffic"
 
   ingress {
     protocol       = "TCP"
@@ -136,18 +120,73 @@ resource "yandex_vpc_security_group" "web" {
 
   egress {
     protocol       = "ANY"
+    from_port      = 0
+    to_port        = 65535
     v4_cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
+# 3. Группа безопасности для Elasticsearch
+resource "yandex_vpc_security_group" "elasticsearch_sg" {
+  name        = "elasticsearch-sg"
+  description = "Security group for Elasticsearch"
+
+  ingress {
+    protocol       = "TCP"
+    port           = 9200
+    v4_cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    protocol       = "ANY"
+    from_port      = 0
+    to_port        = 65535
+    v4_cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# 4. Группа безопасности для Kibana
+resource "yandex_vpc_security_group" "kibana_sg" {
+  name        = "kibana-sg"
+  description = "Security group for Kibana"
+
+  ingress {
+    protocol       = "TCP"
+    port           = 5601
+    v4_cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    protocol       = "ANY"
+    from_port      = 0
+    to_port        = 65535
+    v4_cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# 5. Группа безопасности для внутреннего SSH
 resource "yandex_vpc_security_group" "internal_ssh" {
-  name       = "internal-ssh"
-  network_id = yandex_vpc_network.main.id
+  name        = "internal-ssh"
+  description = "Security group for internal SSH access"
 
   ingress {
     protocol       = "TCP"
     port           = 22
-    v4_cidr_blocks = ["10.0.1.0/24"] # SSH только из bastion
+    v4_cidr_blocks = ["10.0.1.24/32"]
+  }
+
+  ingress {
+    protocol       = "TCP"
+    from_port      = 10050
+    to_port        = 10051
+    v4_cidr_blocks = ["10.0.1.17/32"]
+  }
+
+  egress {
+    protocol       = "ANY"
+    from_port      = 0
+    to_port        = 65535
+    v4_cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
