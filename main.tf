@@ -219,7 +219,7 @@ resource "yandex_vpc_security_group" "es" {
   ingress {
     protocol       = "TCP"
     port           = 9200
-    v4_cidr_blocks = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24", "10.0.4.0/24"]
+    v4_cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
@@ -257,8 +257,8 @@ resource "yandex_compute_instance" "bastion" {
       }
 
     security_group_ids = [
-      yandex_vpc_security_group.bastion.id,
-      yandex_vpc_security_group.internal_traffic.id
+      yandex_vpc_security_group.internal-ssh.id,
+      yandex_vpc_security_group.ssh-bastion.id
     ]
   }
 
@@ -294,12 +294,12 @@ resource "yandex_compute_instance" "web_1" {
     }
   }
 
+
   network_interface {
     subnet_id          = yandex_vpc_subnet.private-web-b.id
     security_group_ids = [
-      yandex_vpc_security_group.web.id,
+      yandex_vpc_security_group.allow-web.id,
       yandex_vpc_security_group.internal_ssh.id,
-      yandex_vpc_security_group.internal_traffic.id
     ]
       dns_record {
         fqdn = "web-1"
@@ -339,9 +339,8 @@ resource "yandex_compute_instance" "web_2" {
   network_interface {
     subnet_id          = yandex_vpc_subnet.private-web-d.id
     security_group_ids = [
-      yandex_vpc_security_group.web.id,
+      yandex_vpc_security_group.allow-web.id,
       yandex_vpc_security_group.internal_ssh.id,
-      yandex_vpc_security_group.internal_traffic.id
     ]
 
       dns_record {
@@ -381,13 +380,13 @@ resource "yandex_compute_instance" "kibana" {
     }
   }
 
+
   network_interface {
     subnet_id          = yandex_vpc_subnet.public.id
     nat                = true
     security_group_ids = [
       yandex_vpc_security_group.internal_ssh.id,
-      yandex_vpc_security_group.kibana.id,
-      yandex_vpc_security_group.internal_traffic.id
+      yandex_vpc_security_group.kibana-sg.id,
     ]
       dns_record {
         fqdn = "kibana"
@@ -426,7 +425,7 @@ resource "yandex_compute_instance" "zabbix_server" {
     nat                = true
     security_group_ids = [
       yandex_vpc_security_group.internal_ssh.id,
-      yandex_vpc_security_group.internal_traffic.id
+      yandex_vpc_security_group.allow-web.id
     ]
 
       dns_record {
@@ -463,12 +462,12 @@ resource "yandex_compute_instance" "elasticsearch" {
       size     = 30
     }
   }
+
   network_interface {
     subnet_id          = yandex_vpc_subnet.private-data.id
     security_group_ids = [
-      yandex_vpc_security_group.es.id,
+      yandex_vpc_security_group.elasticsearch-sg.id,
       yandex_vpc_security_group.internal_ssh.id,
-      yandex_vpc_security_group.internal_traffic.id
     ]
 
       dns_record {
